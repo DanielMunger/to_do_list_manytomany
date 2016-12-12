@@ -40,9 +40,10 @@ namespace  ToDo
       //Assert
       Assert.Equal(testList, result);
     }
+    // [Fact]
+    // {
     //
-    //
-    //
+    // }
     [Fact]
     public void Equal_AreObjectsEquivalent_true()
     {
@@ -67,10 +68,29 @@ namespace  ToDo
       //Assert
       Assert.Equal(testCategory, foundCategory);
     }
+    [Fact]
+    public void Delete_DeletesCategoryAssociationsFromDatabase_True()
+    {
+      DateTime testDate = new DateTime(2009, 4,5);
+      Task testTask = new Task("Mow the Lawn", testDate);
+      testTask.Save();
+
+      Category testCategory = new Category("House Work");
+      testCategory.Save();
+
+      testTask.AddCategory(testCategory);
+      testTask.Delete();
+
+      List<Category> result = testTask.GetCategories();
+      List<Category> test = new List<Category>{};
+
+      Assert.Equal(result, test);
+    }
 
     public void Dispose()
     {
       Category.DeleteAll();
+      Task.DeleteAll();
     }
 
   }

@@ -18,8 +18,8 @@ namespace  ToDo
     public void Equal_AreObjectsEquivalent_true()
     {
       //Arrange
-      Task firstTask = new Task("Buy lettuce.", 1, testDate);
-      Task secondTask = new Task("Buy lettuce.", 1, testDate);
+      Task firstTask = new Task("Buy lettuce.", testDate);
+      Task secondTask = new Task("Buy lettuce.", testDate);
       //Act
       //Assert
       Assert.Equal(firstTask, secondTask);
@@ -40,38 +40,24 @@ namespace  ToDo
     public void Save_SavesToDatabase_true()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn", 1, testDate);
+      Task testTask = new Task("Mow the lawn", testDate);
       testTask.Save();
       //Act
 
       List<Task> result = Task.GetAll();
       List<Task> testList = new List<Task>{testTask};
-
       //Assert
       Assert.Equal(testList, result);
     }
 
-    [Fact]
-    public void Save_SaveAssignsIdToObject_true()
-    {
-      //Arrange
-      Task testTask = new Task("Mow the lawn", 1, testDate);
-      testTask.Save();
 
-      //Act
-      List<Task> result = Task.GetAll();
-      List<Task> testList = new List<Task>{testTask};
-
-      //Assert
-      Assert.Equal(testList, result);
-    }
 
 
     [Fact]
     public void Find_FindsTaskInDatabase_true()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn", 0, testDate);
+      Task testTask = new Task("Mow the lawn", testDate);
       testTask.Save();
 
       //Act
@@ -87,13 +73,13 @@ namespace  ToDo
       //Arrange
 
       DateTime tempDate = new DateTime(2017, 1, 15);
-      Task testTask1 = new Task("Mow the lawn", 0, tempDate);
+      Task testTask1 = new Task("Mow the lawn", tempDate);
       testTask1.Save();
       tempDate = new DateTime(2017, 1, 5);
-      Task testTask3 = new Task("Floss", 0, tempDate);
+      Task testTask3 = new Task("Floss", tempDate);
       testTask3.Save();
       tempDate = new DateTime(2017, 10, 15);
-      Task testTask2 = new Task("Mow the lawn", 0, tempDate);
+      Task testTask2 = new Task("Mow the lawn", tempDate);
       testTask2.Save();
 
 
@@ -105,9 +91,45 @@ namespace  ToDo
       Assert.Equal(orderedTasks, allTasks);
     }
 
+    [Fact]
+    public void GetCategories_ReturnsAllCategories_True()
+    {
+
+      Task testTask = new Task("Mow the Lawn", testDate);
+      testTask.Save();
+
+      Category testCategory = new Category("Yard Work");
+      testCategory.Save();
+      Category testCategory2 = new Category("Chores");
+      testCategory2.Save();
+
+      testTask.AddCategory(testCategory);
+      testTask.AddCategory(testCategory2);
+      List<Category> result = testTask.GetCategories();
+      List<Category> test = new List<Category> {testCategory, testCategory2};
+
+      Assert.Equal(result, test);
+    }
+    [Fact]
+    public void Delete_DeletesTaskFromCategory_True()
+    {
+      Category testCategory = new Category("Home Stuff");
+      testCategory.Save();
+
+      Task newTask = new Task("Mow the Lawn", testDate);
+      newTask.Save();
+      newTask.AddCategory(testCategory);
+      newTask.Delete();
+      List<Task> result = new List<Task>{};
+      List<Task> test = new List<Task>{};
+
+      Assert.Equal(result, test);
+    }
+
     public void Dispose()
     {
       Task.DeleteAll();
+      Category.DeleteAll();
     }
 
   }
