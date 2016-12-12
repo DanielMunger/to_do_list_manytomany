@@ -24,6 +24,15 @@ namespace  ToDo
       //Assert
       Assert.Equal(firstTask, secondTask);
     }
+    [Fact]
+    public void Completed_MarksTaskCompletedInDB_true()
+    {
+      Task newTask = new Task("Mow the lawn", testDate);
+      newTask.Save();
+      newTask.TaskCompleted();
+      bool actualBool = newTask.Completed;
+      Assert.Equal(true, actualBool);
+    }
 
     [Fact]
     public void GetAll_TaskTableEmptyAtFirst_true()
@@ -40,7 +49,7 @@ namespace  ToDo
     public void Save_SavesToDatabase_true()
     {
       //Arrange
-      Task testTask = new Task("Mow the lawn", testDate);
+      Task testTask = new Task("Mow the lawn", testDate, true);
       testTask.Save();
       //Act
 

@@ -183,7 +183,8 @@ namespace ToDo.Objects
             int foundTaskId = queryReader.GetInt32(0);
             string taskDescription = queryReader.GetString(1);
             DateTime taskDueDate = queryReader.GetDateTime(2);
-            Task foundTask = new Task(taskDescription, taskDueDate, foundTaskId);
+            bool completed = queryReader.GetBoolean(3);
+            Task foundTask = new Task(taskDescription, taskDueDate, completed, foundTaskId);
             tasks.Add(foundTask);
           }
           if(queryReader != null)
@@ -203,7 +204,8 @@ namespace ToDo.Objects
         int taskId = rdr.GetInt32(0);
         string taskDescription = rdr.GetString(1);
         DateTime taskDueDate = rdr.GetDateTime(2);
-        Task newTask = new Task(taskDescription, taskDueDate, taskId);
+        bool completed = rdr.GetBoolean(3);
+        Task newTask = new Task(taskDescription, taskDueDate, completed, taskId);
         allTasks.Add(newTask);
       }
 

@@ -8,12 +8,14 @@ namespace ToDo.Objects
   {
     public int Id {get; set;}
     public string Description {get; set;}
+    public bool Completed {get;set;}
     public  DateTime _dueDate = new DateTime();
 
-    public Task(string description, DateTime dueDate, int id = 0)
+    public Task(string description, DateTime dueDate, bool completed = false, int id = 0)
     {
       this.Id = id;
       this.Description = description;
+      this.Completed = completed;
       _dueDate = dueDate;
     }
     public DateTime GetDueDate()
@@ -33,20 +35,45 @@ namespace ToDo.Objects
         bool idEquality = this.Id == newTask.Id;
         bool descriptionEquality = (this.Description == newTask.Description);
         bool dueDateEquality = (this.GetDueDate() == newTask.GetDueDate());
-        return (descriptionEquality && idEquality  && dueDateEquality);
+        bool completedEquality = (this.Completed == newTask.Completed);
+        return (descriptionEquality && idEquality  && dueDateEquality && completedEquality);
       }
     }
     public override int GetHashCode()
     {
       return this.Description.GetHashCode();
     }
+    public void TaskCompleted()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+      SqlCommand cmd = new SqlCommand("UPDATE tasks SET completed = @Completed OUTPUT INSERTED.completed WHERE id = @TaskId ;", conn);
+      SqlParameter taskId = new SqlParameter("@TaskId", this.Id);
+      SqlParameter completedParameter = new SqlParameter("@Completed", "true");
+      cmd.Parameters.Add(taskId);
+      cmd.Parameters.Add(completedParameter);
 
+      SqlDataReader rdr = cmd.ExecuteReader();
+
+      while(rdr.Read())
+      {
+        this.Completed = rdr.GetBoolean(0);
+      }
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
     public void Save()
     {
       SqlConnection conn = DB.Connection();
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, due_date) OUTPUT INSERTED.id VALUES (@TaskDescription, @TaskDueDate);", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, due_date, completed) OUTPUT INSERTED.id VALUES (@TaskDescription, @TaskDueDate, @TaskCompleted);", conn);
 
       SqlParameter descriptionParameter = new SqlParameter();
       descriptionParameter.ParameterName = "@TaskDescription";
@@ -56,8 +83,10 @@ namespace ToDo.Objects
       dueDateParameter.ParameterName = "@TaskDueDate";
       dueDateParameter.Value = this.GetDueDate();
 
+      SqlParameter taskCompleted = new SqlParameter("@TaskCompleted", this.Completed);
       cmd.Parameters.Add(descriptionParameter);
       cmd.Parameters.Add(dueDateParameter);
+      cmd.Parameters.Add(taskCompleted);
 
       SqlDataReader rdr = cmd.ExecuteReader();
 
@@ -106,14 +135,15 @@ namespace ToDo.Objects
       int foundTaskId = 0;
       string foundTaskDescription = null;
       DateTime foundTaskDueDate = new DateTime();
-
+      bool completed = false;
       while(rdr.Read())
       {
         foundTaskId = rdr.GetInt32(0);
         foundTaskDescription = rdr.GetString(1);
         foundTaskDueDate = rdr.GetDateTime(2);
+        completed = rdr.GetBoolean(3);
       }
-      Task foundTask = new Task(foundTaskDescription, foundTaskDueDate, foundTaskId);
+      Task foundTask = new Task(foundTaskDescription, foundTaskDueDate, completed, foundTaskId);
 
       if (rdr != null)
       {
@@ -142,7 +172,8 @@ namespace ToDo.Objects
         int taskId = rdr.GetInt32(0);
         string taskDescription = rdr.GetString(1);
         DateTime dueDate = rdr.GetDateTime(2);
-        Task newTask = new Task(taskDescription, dueDate, taskId);
+        bool completed = rdr.GetBoolean(3);
+        Task newTask = new Task(taskDescription, dueDate, completed, taskId);
         allTasks.Add(newTask);
       }
 
@@ -192,7 +223,8 @@ namespace ToDo.Objects
         int taskId = rdr.GetInt32(0);
         string taskDescription = rdr.GetString(1);
         DateTime dueDate = rdr.GetDateTime(2);
-        Task newTask = new Task(taskDescription, dueDate, taskId);
+        bool completed = rdr.GetBoolean(3);
+        Task newTask = new Task(taskDescription, dueDate, completed, taskId);
         allTasks.Add(newTask);
       }
 
